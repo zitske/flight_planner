@@ -182,15 +182,7 @@ class _MapScreenState extends State<MapScreen> {
                 subdomains: ['a', 'b', 'c'],
               ),
               PolylineLayer(
-                polylines: [
-                  Polyline(
-                    points: _waypoints
-                        .map((wp) => LatLng(wp.latitude, wp.longitude))
-                        .toList(),
-                    strokeWidth: 4.0,
-                    color: Colors.blue,
-                  ),
-                ],
+                polylines: _createPolylines(),
               ),
               MarkerLayer(
                 markers: _waypoints.map((wp) {
@@ -260,7 +252,8 @@ class _MapScreenState extends State<MapScreen> {
                                                   waypoint.altitude.toString());
                                       final speedController =
                                           TextEditingController(
-                                              text: waypoint.speed.toString());
+                                              text: (waypoint.speed * 3.6)
+                                                  .toStringAsFixed(0));
                                       return AlertDialog(
                                         title: const Text('Edit Waypoint'),
                                         content: Column(
@@ -276,7 +269,7 @@ class _MapScreenState extends State<MapScreen> {
                                             TextField(
                                               controller: speedController,
                                               decoration: const InputDecoration(
-                                                  labelText: 'Speed'),
+                                                  labelText: 'Speed (km/h)'),
                                               keyboardType:
                                                   TextInputType.number,
                                             ),
@@ -422,5 +415,55 @@ class _MapScreenState extends State<MapScreen> {
         ],
       ),
     );
+  }
+
+  List<Polyline> _createPolylines() {
+    List<Polyline> polylines = [];
+    for (int i = 0; i < _waypoints.length - 1; i++) {
+      final start = _waypoints[i];
+      final end = _waypoints[i + 1];
+      final gradientColors = _getGradientColorsForSpeed(start.speed, end.speed);
+      polylines.add(
+        Polyline(
+          points: [
+            LatLng(start.latitude, start.longitude),
+            LatLng(end.latitude, end.longitude)
+          ],
+          strokeWidth: 4.0,
+          gradientColors: gradientColors,
+        ),
+      );
+    }
+    return polylines;
+  }
+
+  List<Color> _getGradientColorsForSpeed(double startSpeed, double endSpeed) {
+    return [
+      _getColorForSpeed(startSpeed),
+      _getColorForSpeed((startSpeed + endSpeed) / 2),
+      _getColorForSpeed(endSpeed),
+    ];
+  }
+
+  Color _getColorForSpeed(double speed) {
+    final maxSpeed = _waypoints.isNotEmpty
+        ? _waypoints.map((wp) => wp.speed).reduce((a, b) => a > b ? a : b)
+        : 0.0;
+    final minSpeed = _waypoints.isNotEmpty
+        ? _waypoints.map((wp) => wp.speed).reduce((a, b) => a < b ? a : b)
+        : 0.0;
+
+    if (speed <= minSpeed) {
+      return Colors.cyan;
+    } else if (speed >= maxSpeed) {
+      return Colors.red;
+    } else {
+      final ratio = (speed - minSpeed) / (maxSpeed - minSpeed);
+      if (ratio < 0.5) {
+        return Color.lerp(Colors.cyan, Colors.yellow, ratio * 2)!;
+      } else {
+        return Color.lerp(Colors.yellow, Colors.red, (ratio - 0.5) * 2)!;
+      }
+    }
   }
 }
