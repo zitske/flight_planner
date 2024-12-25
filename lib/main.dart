@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:fl_chart/fl_chart.dart'; // Adicione esta linha para o gráfico
 
 void main() {
   runApp(const MyApp());
@@ -271,8 +272,8 @@ class _MapScreenState extends State<MapScreen> {
             ),
           ),
           Positioned(
-            bottom: 20,
-            right: 20,
+            bottom: 230, // Ajustar para garantir que o botão apareça
+            left: 20,
             child: FloatingActionButton(
               onPressed: () async {
                 Position position = await Geolocator.getCurrentPosition();
@@ -284,6 +285,70 @@ class _MapScreenState extends State<MapScreen> {
                     15.0); // Mova o mapa para a localização atual
               },
               child: const Icon(Icons.my_location),
+            ),
+          ),
+          Positioned(
+            bottom: 20,
+            right: 20,
+            child: SizedBox(
+              width: 330, // Ajustar a largura para não passar do limite do card
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green, // Cor verde
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 15), // Espessura do botão
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5), // Menos arredondado
+                  ),
+                ),
+                onPressed: () {
+                  // Lógica para salvar o plano de voo
+                  // Por exemplo, você pode salvar os waypoints em um arquivo ou enviar para um servidor
+                },
+                child: const Text('Salvar',
+                    style: TextStyle(fontSize: 18, color: Colors.white)),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 10, // Adicionar margem inferior
+            left: 20, // Adicionar margem esquerda
+            right: 380, // Ajustar para não sobrepor o card dos waypoints
+            child: Container(
+              height: 200,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 10,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.all(16.0), // Adicionar padding
+              child: LineChart(
+                LineChartData(
+                  gridData: FlGridData(show: false),
+                  titlesData: FlTitlesData(show: false),
+                  borderData: FlBorderData(show: false),
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: _waypoints
+                          .asMap()
+                          .entries
+                          .map(
+                              (e) => FlSpot(e.key.toDouble(), e.value.altitude))
+                          .toList(),
+                      isCurved: false, // Linhas retas
+                      color: Colors.blue,
+                      barWidth: 4,
+                      belowBarData: BarAreaData(show: false),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ],
