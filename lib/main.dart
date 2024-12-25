@@ -114,6 +114,57 @@ class _MapScreenState extends State<MapScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Flight Planner'),
+        leading: IconButton(
+          icon: const Icon(Icons.airplanemode_active), // Ícone de avião
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (context) {
+                final modelController = TextEditingController();
+                final registrationController = TextEditingController();
+                final maxSpeedController = TextEditingController();
+                return AlertDialog(
+                  title: const Text('Informações da Aeronave'),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextField(
+                        controller: modelController,
+                        decoration: const InputDecoration(labelText: 'Modelo'),
+                      ),
+                      TextField(
+                        controller: registrationController,
+                        decoration:
+                            const InputDecoration(labelText: 'Registro'),
+                      ),
+                      TextField(
+                        controller: maxSpeedController,
+                        decoration: const InputDecoration(
+                            labelText: 'Velocidade Máxima (km/h)'),
+                        keyboardType: TextInputType.number,
+                      ),
+                    ],
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text('Cancelar'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        // Lógica para salvar as informações da aeronave
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text('Salvar'),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        ),
       ),
       body: Stack(
         children: [
@@ -184,6 +235,8 @@ class _MapScreenState extends State<MapScreen> {
                   ),
                   Expanded(
                     child: ListView.builder(
+                      padding: const EdgeInsets.only(
+                          bottom: 80), // Adicionar padding inferior
                       itemCount: _waypoints.length,
                       itemBuilder: (context, index) {
                         final waypoint = _waypoints[index];
@@ -288,7 +341,8 @@ class _MapScreenState extends State<MapScreen> {
             ),
           ),
           Positioned(
-            bottom: 20,
+            bottom:
+                20, // Ajustar para garantir que o botão não sobreponha a lista
             right: 20,
             child: SizedBox(
               width: 330, // Ajustar a largura para não passar do limite do card
