@@ -3,8 +3,15 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:fl_chart/fl_chart.dart'; // Adicione esta linha para o gráfico
+import 'dart:io';
+import 'dart:convert'; // Add this line to import 'utf8'
+import 'package:path_provider/path_provider.dart';
+import 'package:csv/csv.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:html' as html;
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized(); // Adicione esta linha
   runApp(const MyApp());
 }
 
@@ -107,6 +114,44 @@ class _MapScreenState extends State<MapScreen> {
     setState(() {
       _waypoints.removeAt(index);
     });
+  }
+
+  Future<void> _exportWaypointsToCSV() async {
+    List<List<dynamic>> rows = [
+      ["Latitude", "Longitude", "Altitude", "Speed"]
+    ];
+    for (var waypoint in _waypoints) {
+      List<dynamic> row = [];
+      row.add(waypoint.latitude);
+      row.add(waypoint.longitude);
+      row.add(waypoint.altitude);
+      row.add(waypoint.speed * 3.6); // Convertendo m/s para km/h
+      rows.add(row);
+    }
+
+    String csv = const ListToCsvConverter().convert(rows);
+    String formattedDate = DateTime.now().toIso8601String().split('T').first;
+    String fileName = "flight_plan_$formattedDate.csv";
+
+    if (kIsWeb) {
+      // Lógica específica para web
+      final bytes = utf8.encode(csv);
+      final blob = html.Blob([bytes]);
+      final url = html.Url.createObjectUrlFromBlob(blob);
+      final anchor = html.AnchorElement(href: url)
+        ..setAttribute("download", fileName)
+        ..click();
+      html.Url.revokeObjectUrl(url);
+    } else {
+      final directory = await getApplicationDocumentsDirectory();
+      final path = "${directory.path}/$fileName";
+      final file = File(path);
+      await file.writeAsString(csv);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Waypoints exportados para $path')),
+      );
+    }
   }
 
   @override
@@ -348,10 +393,7 @@ class _MapScreenState extends State<MapScreen> {
                     borderRadius: BorderRadius.circular(5), // Menos arredondado
                   ),
                 ),
-                onPressed: () {
-                  // Lógica para salvar o plano de voo
-                  // Por exemplo, você pode salvar os waypoints em um arquivo ou enviar para um servidor
-                },
+                onPressed: _exportWaypointsToCSV,
                 child: const Text('Salvar',
                     style: TextStyle(fontSize: 18, color: Colors.white)),
               ),
