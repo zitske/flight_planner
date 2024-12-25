@@ -382,26 +382,40 @@ class _MapScreenState extends State<MapScreen> {
                 ],
               ),
               padding: const EdgeInsets.all(16.0), // Adicionar padding
-              child: LineChart(
-                LineChartData(
-                  gridData: FlGridData(show: false),
-                  titlesData: FlTitlesData(show: false),
-                  borderData: FlBorderData(show: false),
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: _waypoints
-                          .asMap()
-                          .entries
-                          .map(
-                              (e) => FlSpot(e.key.toDouble(), e.value.altitude))
-                          .toList(),
-                      isCurved: false, // Linhas retas
-                      color: Colors.blue,
-                      barWidth: 4,
-                      belowBarData: BarAreaData(show: false),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Altitude',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                     ),
-                  ],
-                ),
+                  ),
+                  Expanded(
+                    child: LineChart(
+                      LineChartData(
+                        gridData: FlGridData(show: false),
+                        titlesData: FlTitlesData(show: false),
+                        borderData: FlBorderData(show: false),
+                        lineBarsData: [
+                          LineChartBarData(
+                            spots: _waypoints
+                                .asMap()
+                                .entries
+                                .map((e) =>
+                                    FlSpot(e.key.toDouble(), e.value.altitude))
+                                .toList(),
+                            isCurved: false, // Linhas retas
+                            color: Colors.blue,
+                            barWidth: 4,
+                            belowBarData: BarAreaData(show: false),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
